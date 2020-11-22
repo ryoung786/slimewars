@@ -52,6 +52,16 @@ jobs:
       - run: mix deps.get
       - run: mix format --check-formatted
       - run: mix test
+      - run: mix coveralls.json
+
+      - name: Upload coverage to CodeCov
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          fail_ci_if_error: true # optional (default = false)
+
+
+
 
   # deploy:
   #   needs: test # Will only run if the test job succeeds
