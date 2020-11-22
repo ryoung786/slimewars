@@ -46,7 +46,8 @@ defmodule Slime.MixProject do
       {:telemetry_poller, "~> 0.5.1"},
       {:gettext, "~> 0.18.2"},
       {:jason, "~> 1.2.2"},
-      {:plug_cowboy, "~> 2.4.1"}
+      {:plug_cowboy, "~> 2.4.1"},
+      {:cachex, "~> 3.3.0"}
     ]
   end
 

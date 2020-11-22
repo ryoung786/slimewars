@@ -18,6 +18,7 @@ defmodule SlimeWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
+    live "/games/:code", GameLive, :index
   end
 
   # Other scopes may use custom stacks.

@@ -13,6 +13,7 @@ defmodule Slime.Application do
       SlimeWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Slime.PubSub},
+      {Cachex, name: :games},
       # Start the Endpoint (http/https)
       SlimeWeb.Endpoint
       # Start a worker by calling: Slime.Worker.start_link(arg)

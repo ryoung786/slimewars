@@ -1,0 +1,8 @@
+<h1>Slime Wars</h1>
+<div class="board <%= @board.size %>">
+  <%= for row <- @board do %>
+    <%= for cell <- row do %>
+      <div class="<%= cell.owner %>"></div>
+    <% end %>
+  <% end %>
+</div>
