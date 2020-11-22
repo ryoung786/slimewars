@@ -1,6 +1,6 @@
 defmodule Slime.GameTest do
   use ExUnit.Case, async: true
-  alias Slime.{Game, Board, Cell}
+  alias Slime.{Game, Board}
 
   setup_all do
     sample_games()
@@ -31,25 +31,25 @@ defmodule Slime.GameTest do
 
   describe "moves:" do
     test "can duplicate", %{new_game: game} do
-      {:ok, game} = Game.move(game, c(0, 0), c(1, 1))
-      assert Board.player_at(game.board, c(0, 0)) == :blue
-      assert Board.player_at(game.board, c(1, 1)) == :blue
+      {:ok, game} = Game.move(game, {0, 0}, {1, 1})
+      assert Board.player_at(game.board, {0, 0}) == :blue
+      assert Board.player_at(game.board, {1, 1}) == :blue
     end
 
     test "can jump", %{new_game: game} do
-      {:ok, game} = Game.move(game, c(0, 0), c(2, 2))
-      assert Board.player_at(game.board, c(0, 0)) == :empty
-      assert Board.player_at(game.board, c(2, 2)) == :blue
+      {:ok, game} = Game.move(game, {0, 0}, {2, 2})
+      assert Board.player_at(game.board, {0, 0}) == :empty
+      assert Board.player_at(game.board, {2, 2}) == :blue
     end
 
     test "can flip neighbors", %{to_flip: game} do
       # blue @[3,1] and green @[4,2],[2,3] and empty everywhere else
       # cloning blue to @3,2 should flip both green, and no green left on board
-      {:ok, game} = Game.move(game, c(3, 1), c(3, 2))
-      assert Board.player_at(game.board, c(3, 1)) == :blue
-      assert Board.player_at(game.board, c(3, 2)) == :blue
-      assert Board.player_at(game.board, c(4, 2)) == :blue
-      assert Board.player_at(game.board, c(2, 3)) == :blue
+      {:ok, game} = Game.move(game, {3, 1}, {3, 2})
+      assert Board.player_at(game.board, {3, 1}) == :blue
+      assert Board.player_at(game.board, {3, 2}) == :blue
+      assert Board.player_at(game.board, {4, 2}) == :blue
+      assert Board.player_at(game.board, {2, 3}) == :blue
     end
 
     # Before:      After:
@@ -58,7 +58,7 @@ defmodule Slime.GameTest do
     # [ , , , ]    [ , , , ]
     # [G, , ,B]    [G, , ,B]
     test "before after" do
-      {:ok, game} = Game.move(Game.new(4, 4), c(0, 0), c(1, 2))
+      {:ok, game} = Game.move(Game.new(4, 4), {0, 0}, {1, 2})
 
       expected =
         g("""
@@ -72,7 +72,12 @@ defmodule Slime.GameTest do
     end
   end
 
-  defp c(row, col), do: Cell.new(row, col)
+  test "empty board still reports scores for all players", ctx do
+    assert %{blue: 2, green: 0} = Game.score(ctx.no_green)
+    assert %{blue: 2, green: 2} = Game.score(ctx.new_game)
+    assert %{blue: 4, green: 45} = Game.score(ctx.green_win)
+    assert %{blue: 45, green: 4} = Game.score(ctx.blue_win)
+  end
 
   defp g(arr) do
     game = Game.new(4, 4)
@@ -127,20 +132,6 @@ defmodule Slime.GameTest do
             ])
         }
       },
-      no_blue_left: %Game{
-        board: %Board{
-          cells:
-            Slime.Matrix.from_list([
-              [:green, :green, :green, :green, :green, :green, :empty],
-              [:green, :green, :green, :green, :green, :green, :green],
-              [:green, :green, :green, :empty, :green, :green, :green],
-              [:green, :green, :green, :green, :green, :green, :green],
-              [:green, :green, :empty, :green, :green, :green, :green],
-              [:green, :green, :green, :green, :green, :green, :green],
-              [:empty, :green, :green, :green, :green, :green, :green]
-            ])
-        }
-      },
       to_flip: %Game{
         board: %Board{
           cells:
@@ -150,6 +141,20 @@ defmodule Slime.GameTest do
               [:empty, :empty, :empty, :green, :empty, :empty, :empty],
               [:empty, :blue, :empty, :empty, :empty, :empty, :empty],
               [:empty, :empty, :green, :empty, :empty, :empty, :empty],
+              [:empty, :empty, :empty, :empty, :empty, :empty, :empty],
+              [:empty, :empty, :empty, :empty, :empty, :empty, :empty]
+            ])
+        }
+      },
+      no_green: %Game{
+        board: %Board{
+          cells:
+            Slime.Matrix.from_list([
+              [:empty, :empty, :empty, :empty, :empty, :empty, :empty],
+              [:empty, :empty, :empty, :empty, :empty, :empty, :empty],
+              [:empty, :empty, :empty, :empty, :empty, :empty, :empty],
+              [:empty, :blue, :empty, :empty, :empty, :empty, :empty],
+              [:empty, :empty, :blue, :empty, :empty, :empty, :empty],
               [:empty, :empty, :empty, :empty, :empty, :empty, :empty],
               [:empty, :empty, :empty, :empty, :empty, :empty, :empty]
             ])

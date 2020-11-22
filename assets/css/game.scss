@@ -10,5 +10,6 @@
     border: 1px solid #101010;
     &.blue { background: navy; }
     &.green { background: seagreen; }
+    &.selected { background: red; }
   }
 }

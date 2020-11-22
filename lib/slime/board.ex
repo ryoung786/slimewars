@@ -1,6 +1,7 @@
 defmodule Slime.Board do
   alias __MODULE__, as: Board
-  alias Slime.Cell
+
+  @type cell :: Slime.Game.cell()
 
   @typedoc """
   Represents the game grid
@@ -14,9 +15,8 @@ defmodule Slime.Board do
             height: @default_height,
             cells: Slime.Matrix.from_list([[:empty]])
 
-  def new(width, height) do
-    %Board{width: width, height: height, cells: starting_cells(width, height, :blue, :green)}
-  end
+  def new(width, height),
+    do: %Board{width: width, height: height, cells: starting_cells(width, height, :blue, :green)}
 
   @spec cell_frequencies(Board.t()) :: map()
   def cell_frequencies(%Board{cells: cells}) do
@@ -33,11 +33,11 @@ defmodule Slime.Board do
     Map.get(freq, :empty, 0)
   end
 
-  @spec player_at(Board.t(), Cell.t()) :: atom()
-  def player_at(%Board{cells: cells}, %Cell{row: r, col: c}), do: cells[r][c]
+  @spec player_at(Board.t(), cell) :: atom()
+  def player_at(%Board{cells: cells}, {r, c}), do: cells[r][c]
 
-  @spec place_cell(Board.t(), Cell.t(), atom()) :: Board.t()
-  def place_cell(%Board{cells: cells} = board, %Cell{row: r, col: c} = _dest, player) do
+  @spec place_cell(Board.t(), cell, atom()) :: Board.t()
+  def place_cell(%Board{cells: cells} = board, {r, c} = _dest, player) do
     cells = put_in(cells[r][c], player)
     # todo: flip surrounding cells
     %{board | cells: cells}
@@ -63,10 +63,10 @@ defmodule Slime.Board do
     Slime.Matrix.from_list(lst)
   end
 
-  @spec move(Board.t(), Cell.t(), Cell.t()) :: Board.t()
-  def move(%Board{} = board, %Cell{} = src, %Cell{} = dest) do
+  @spec move(Board.t(), cell, cell) :: Board.t()
+  def move(%Board{} = board, src, dest) do
     board =
-      case abs(src.row - dest.row) < 2 and abs(src.col - dest.col) < 2 do
+      case abs(row(src) - row(dest)) < 2 and abs(col(src) - col(dest)) < 2 do
         true -> duplicate_cell(board, src, dest)
         false -> jump_cell(board, src, dest)
       end
@@ -74,38 +74,55 @@ defmodule Slime.Board do
     flip_neighbors(board, dest)
   end
 
-  @spec duplicate_cell(Board.t(), Cell.t(), Cell.t()) :: Board.t()
-  defp duplicate_cell(%Board{} = board, %Cell{} = src, %Cell{} = dest) do
-    put_in(board.cells[dest.row][dest.col], board.cells[src.row][src.col])
+  @spec duplicate_cell(Board.t(), cell, cell) :: Board.t()
+  defp duplicate_cell(%Board{} = board, src, dest) do
+    put_in(
+      board.cells[row(dest)][col(dest)],
+      board.cells[row(src)][col(src)]
+    )
   end
 
-  @spec jump_cell(Board.t(), Cell.t(), Cell.t()) :: Board.t()
-  defp jump_cell(%Board{} = board, %Cell{} = src, %Cell{} = dest),
+  @spec jump_cell(Board.t(), cell, cell) :: Board.t()
+  defp jump_cell(%Board{} = board, src, dest),
     do: board |> duplicate_cell(src, dest) |> remove_from_cell(src)
 
-  @spec remove_from_cell(Board.t(), Cell.t()) :: Board.t()
-  defp remove_from_cell(%Board{} = board, %Cell{row: r, col: c} = _cell),
+  # @spec remove_from_cell(Board.t(), cell) :: Board.t()
+  defp remove_from_cell(%Board{} = board, {r, c} = _cell),
     do: put_in(board.cells[r][c], :empty)
 
-  @spec flip_neighbors(Board.t(), Cell.t()) :: Board.t()
-  defp flip_neighbors(%Board{} = board, %Cell{row: r, col: c} = _cell) do
+  @spec flip_neighbors(Board.t(), cell) :: Board.t()
+  defp flip_neighbors(%Board{} = board, {r, c} = _cell) do
     player = board.cells[r][c]
-    neighbor_vectors = for i <- [-1, 0, 1], j <- [-1, 0, 1], do: {i, j}
 
-    neighbor_vectors
-    |> Enum.reject(fn {y, x} -> y == 0 and x == 0 end)
-    |> Enum.map(fn {y, x} -> Cell.new(r + y, c + x) end)
+    neighbor_vectors(1)
+    |> Enum.map(fn {y, x} -> {r + y, c + x} end)
     |> Enum.reduce(board, fn cell, acc -> flip_cell(acc, cell, player) end)
   end
 
-  @spec flip_cell(Board.t(), Cell.t(), atom) :: Board.t()
-  defp flip_cell(%Board{} = board, %Cell{row: r, col: c} = cell, player) do
+  @spec empty_neighbors(Board.t(), cell) :: [cell]
+  def empty_neighbors(%Board{} = board, {r, c} = _cell) do
+    neighbor_vectors(2)
+    |> Enum.map(fn {y, x} -> {r + y, c + x} end)
+    |> Enum.filter(fn cell -> is_empty?(board, cell) end)
+  end
+
+  defp neighbor_vectors(dist),
+    do:
+      for(i <- -dist..dist, j <- -dist..dist, do: {i, j})
+      |> Enum.reject(fn {y, x} -> y == 0 and x == 0 end)
+
+  @spec flip_cell(Board.t(), cell, atom) :: Board.t()
+  defp flip_cell(%Board{} = board, {r, c} = cell, player) do
     case board.cells[r][c] do
       nil -> board
       :empty -> board
       _ -> place_cell(board, cell, player)
     end
   end
+
+  defp row({r, _c}), do: r
+  defp col({_r, c}), do: c
+  def is_empty?(board, cell), do: Board.player_at(board, cell) == :empty
 end
 
 defimpl Inspect, for: Slime.Board do

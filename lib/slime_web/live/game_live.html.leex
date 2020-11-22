@@ -1,8 +1,24 @@
+<% board = @game.board %>
+<% score = Game.score(@game) %>
+<% turn = Game.turn(@game) %>
+<% valid_moves = Game.valid_moves(@game, @selected) %>
+
 <h1>Slime Wars</h1>
-<div class="board size-<%= @board.width %>">
-  <%= for row <- Matrix.to_list(@board.cells) do %>
-    <%= for cell <- row do %>
-      <div class="cell <%= cell %>"></div>
+<div class="board size-<%= board.width %>">
+  <%= for {row, r} <- Enum.with_index(Matrix.to_list(board.cells)) do %>
+    <%= for {cell, c} <- Enum.with_index(row) do %>
+      <div class="cell <%= cell %> <%= if @selected == {r, c}, do: "selected" %>"
+           <%= if cell == turn do %>
+           phx-click="select"
+           phx-value-row="<%= r %>"
+           phx-value-col="<%= c %>"
+           <% end %>
+           <%= if @selected != nil and Slime.Board.is_empty?(board, {r,c}) do %>
+           phx-click="move"
+           phx-value-row="<%= r %>"
+           phx-value-col="<%= c %>"
+           <% end %>
+      ></div>
     <% end %>
   <% end %>
 </div>
@@ -10,9 +26,8 @@
 <%= if Game.is_game_over?(@game) do %>
   <h2>Game Over</h2>
 <% else %>
-  <p>Turn: <%= Game.turn(@game) %></p>
+  <p>Turn: <%= turn %></p>
 <% end %>
 
-<% score = Game.score(@game) %>
-<h3>Blue <%= score[:blue] %></h3>
-<h3>Green <%= score[:green] %></h3>
+<h3>Blue <%= score.blue %></h3>
+<h3>Green <%= score.green %></h3>

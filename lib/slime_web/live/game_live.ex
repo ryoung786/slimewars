@@ -5,12 +5,31 @@ defmodule SlimeWeb.GameLive do
   @impl true
   def mount(_params, _session, socket) do
     game = Game.new()
-    {:ok, assign(socket, game: game, board: game.board)}
+    {:ok, assign(socket, game: game, selected: nil)}
   end
 
   @impl true
-  def handle_event("suggest", %{"q" => query}, socket) do
-    {:noreply, assign(socket, results: search(query), query: query)}
+  def handle_event("select", %{"row" => r, "col" => c}, socket) do
+    [r, c] = Enum.map([r, c], &String.to_integer/1)
+
+    if Game.can_select(socket.assigns.game, {r, c}) do
+      {:noreply, assign(socket, selected: {r, c})}
+    else
+      {:noreply, socket |> put_flash(:error, "You can't select that cell")}
+    end
+  end
+
+  @impl true
+  def handle_event("move", %{"row" => r, "col" => c}, socket) do
+    [r, c] = Enum.map([r, c], &String.to_integer/1)
+    src = socket.assigns.selected
+    dest = {r, c}
+
+    with {:ok, game} <- Game.move(socket.assigns.game, src, dest) do
+      {:noreply, assign(socket, game: game, selected: nil)}
+    else
+      {:invalid_move, reason} -> {:noreply, socket |> put_flash(:error, reason)}
+    end
   end
 
   @impl true

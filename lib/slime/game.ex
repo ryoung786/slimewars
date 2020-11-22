@@ -1,8 +1,9 @@
 defmodule Slime.Game do
   alias __MODULE__, as: Game
-  alias Slime.{Board, Cell}
+  alias Slime.{Board}
 
   @type t :: %Game{board: Board.t(), players: [], current_player_index: non_neg_integer()}
+  @type cell :: {non_neg_integer(), non_neg_integer()}
 
   defstruct board: %Board{},
             players: [:blue, :green],
@@ -46,10 +47,13 @@ defmodule Slime.Game do
   end
 
   @spec score(Game.t()) :: map()
-  def score(%Game{} = game), do: Board.cell_frequencies(game.board)
+  def score(%Game{} = game) do
+    scores = Board.cell_frequencies(game.board)
+    game.players |> Enum.reduce(scores, fn player, acc -> Map.put_new(acc, player, 0) end)
+  end
 
-  @spec move(Game.t(), Cell.t(), Cell.t()) :: {:ok, Game.t()} | {:error, String.t()}
-  def move(%Game{} = game, %Cell{} = src, %Cell{} = dest) do
+  @spec move(Game.t(), cell, cell) :: {:ok, Game.t()} | {:invalid_move, String.t()}
+  def move(%Game{} = game, src, dest) do
     with :valid <- validate_move(game, src, dest) do
       {:ok, update_board(game, src, dest)}
     else
@@ -57,8 +61,8 @@ defmodule Slime.Game do
     end
   end
 
-  @spec update_board(Game.t(), Cell.t(), Cell.t()) :: Game.t()
-  defp update_board(%Game{} = game, %Cell{} = src, %Cell{} = dest) do
+  @spec update_board(Game.t(), cell, cell) :: Game.t()
+  defp update_board(%Game{} = game, src, dest) do
     %Game{
       board: Board.move(game.board, src, dest),
       players: game.players,
@@ -66,6 +70,21 @@ defmodule Slime.Game do
     }
   end
 
-  defp validate_move(%Game{} = game, %Cell{} = src, %Cell{} = dest),
+  @spec valid_moves(Game.t(), cell) :: [cell]
+  def valid_moves(%Game{} = game, selected_cell) do
+    case selected_cell do
+      nil -> []
+      _ -> Board.empty_neighbors(game.board, selected_cell)
+    end
+  end
+
+  defp validate_move(%Game{} = game, src, dest),
     do: Slime.MoveValidations.validate(game, src, dest)
+
+  def can_select(%Game{} = game, cell) do
+    case Slime.MoveValidations.validate_select(game, cell) do
+      :valid -> true
+      {:invalid, _reason} -> false
+    end
+  end
 end
