@@ -10,7 +10,9 @@ defmodule Slime.MixProject do
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [coveralls: :test, "coveralls.json": :test, "coveralls.xml": :test]
     ]
   end
 
@@ -39,6 +41,7 @@ defmodule Slime.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_live_view, "~> 0.15.0"},
       {:floki, ">= 0.0.0", only: :test},
+      {:excoveralls, "~> 0.13.3", only: :test},
       {:phoenix_html, "~> 2.14.2"},
       {:phoenix_live_reload, "~> 1.3", only: :dev},
       {:phoenix_live_dashboard, "~> 0.4.0"},
