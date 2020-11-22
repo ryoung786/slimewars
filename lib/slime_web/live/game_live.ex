@@ -1,10 +1,11 @@
 defmodule SlimeWeb.GameLive do
   use SlimeWeb, :live_view
-  alias Slime.Board
+  alias Slime.{Game, Matrix}
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, board: %Board{}, query: "", results: %{})}
+    game = Game.new()
+    {:ok, assign(socket, game: game, board: game.board)}
   end
 
   @impl true

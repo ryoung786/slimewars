@@ -1,0 +1,14 @@
+.board {
+  display: grid;
+  grid-gap: 7px;
+  max-width: 44rem;
+  &.size-7 {
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .cell {
+    height: 50px;
+    border: 1px solid #101010;
+    &.blue { background: navy; }
+    &.green { background: seagreen; }
+  }
+}

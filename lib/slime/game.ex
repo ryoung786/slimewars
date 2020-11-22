@@ -45,6 +45,9 @@ defmodule Slime.Game do
     game.players |> Enum.at(game.current_player_index)
   end
 
+  @spec score(Game.t()) :: map()
+  def score(%Game{} = game), do: Board.cell_frequencies(game.board)
+
   @spec move(Game.t(), Cell.t(), Cell.t()) :: {:ok, Game.t()} | {:error, String.t()}
   def move(%Game{} = game, %Cell{} = src, %Cell{} = dest) do
     with :valid <- validate_move(game, src, dest) do
