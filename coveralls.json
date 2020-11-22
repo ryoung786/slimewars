@@ -1,0 +1,16 @@
+{
+  "custom_stop_words": [],
+
+  "coverage_options": {
+    "output_dir": "cover/",
+    "minimum_coverage": 0
+  },
+
+  "skip_files": [
+    "lib/slime/matrix.ex",
+    "test",
+    "lib/slime/application.ex",
+    "lib/slime_web.ex",
+    "lib/slime_web/views/error_helpers.ex"
+  ]
+}
