@@ -1,5 +1,7 @@
 # Slime
 
+[![codecov](https://codecov.io/gh/ryoung786/slimewars/branch/main/graph/badge.svg?token=6HI2076CWU)](https://codecov.io/gh/ryoung786/slimewars)
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
