@@ -10,6 +10,13 @@
     border: 1px solid #101010;
     &.blue { background: navy; }
     &.green { background: seagreen; }
-    &.selected { background: red; }
+    &.selected { animation: pulse 1.75s infinite alternate; }
+    &.valid-move { background: lightyellow; }
+    &.valid-move:hover { background: gold; }
   }
+}
+
+@keyframes pulse {
+    from { opacity: 1; }
+    to { opacity: .6; }
 }

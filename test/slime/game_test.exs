@@ -79,6 +79,24 @@ defmodule Slime.GameTest do
     assert %{blue: 45, green: 4} = Game.score(ctx.blue_win)
   end
 
+  test "valid moves", %{blue_win: full_game} do
+    game =
+      g("""
+                [ ,G, ,B]
+                [ , ,B, ]
+                [ ,G, , ]
+                [G, , ,B]
+      """)
+
+    assert MapSet.new([{0, 2}, {1, 1}, {1, 3}, {2, 2}, {2, 3}]) ==
+             Game.valid_moves(game, {0, 3}) |> MapSet.new()
+
+    assert MapSet.new([{0, 0}, {0, 2}, {1, 0}, {1, 1}, {1, 3}, {2, 0}, {2, 2}, {2, 3}]) ==
+             Game.valid_moves(game, {0, 1}) |> MapSet.new()
+
+    assert Enum.empty?(Game.valid_moves(full_game, {2, 2}))
+  end
+
   defp g(arr) do
     game = Game.new(4, 4)
 

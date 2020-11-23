@@ -7,17 +7,15 @@
 <div class="board size-<%= board.width %>">
   <%= for {row, r} <- Enum.with_index(Matrix.to_list(board.cells)) do %>
     <%= for {cell, c} <- Enum.with_index(row) do %>
-      <div class="cell <%= cell %> <%= if @selected == {r, c}, do: "selected" %>"
-           <%= if cell == turn do %>
-           phx-click="select"
+      <div class="cell
+                  <%= cell %>
+                  <%= if @selected == {r,c}, do: "selected" %>
+                  <%= if {r, c} in valid_moves, do: "valid-move" %>"
            phx-value-row="<%= r %>"
            phx-value-col="<%= c %>"
-           <% end %>
-           <%= if @selected != nil and Slime.Board.is_empty?(board, {r,c}) do %>
-           phx-click="move"
-           phx-value-row="<%= r %>"
-           phx-value-col="<%= c %>"
-           <% end %>
+           <%= if cell == turn and @selected != {r,c} do %>phx-click="select"<% end %>
+           <%= if @selected == {r,c} or {r,c} not in valid_moves do %>phx-click="deselect"<% end %>
+           <%= if @selected != nil and Slime.Board.is_empty?(board, {r,c}) do %>phx-click="move"<% end %>
       ></div>
     <% end %>
   <% end %>
