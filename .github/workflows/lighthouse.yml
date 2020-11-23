@@ -2,7 +2,7 @@ name: Lighthouse CI
 on:
   schedule:
     # every 5 minutes
-    - cron:  '*/5 * * * *'
+    - cron:  '0 23 * * *'
 jobs:
   lighthouse:
     runs-on: ubuntu-latest
