@@ -1,7 +1,7 @@
 name: Lighthouse CI
 on:
   schedule:
-    # every 5 minutes
+    # every day at 23:00
     - cron:  '0 23 * * *'
 jobs:
   lighthouse:
